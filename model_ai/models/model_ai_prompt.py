@@ -89,7 +89,16 @@ class ModelAIPrompt(models.Model):
     def _compose_prompt_content(self):
         self.ensure_one()
 
-        sections = [_('Buatkan analisis dan rencana tindakan CAPA berdasarkan data berikut.')]
+        sections = [
+            _('Buatkan analisis dan rencana tindakan CAPA berdasarkan data berikut.'),
+            _(
+                'Susun respons dengan urutan bagian sebagai berikut:\n'
+                '1. Masalah dari Pelanggan (ringkas kembali inti keluhan).\n'
+                '2. Analisa Masalah (jelaskan analisis akar penyebab secara singkat dan jelas).\n'
+                '3. Fishbone Analysis (uraikan visualisasi atau rangkuman diagram sebelum bagian lain).\n'
+                'Lanjutkan dengan bagian-bagian pendukung lain seperti rencana tindakan CAPA dan indikator keberhasilan.'
+            ),
+        ]
         if self.prompt:
             sections.append(self.prompt.strip())
         context_lines = []
