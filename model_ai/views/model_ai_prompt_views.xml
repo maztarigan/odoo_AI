@@ -40,6 +40,9 @@
                         <page string="Response">
                             <field name="response" nolabel="1" readonly="1"/>
                         </page>
+                        <page string="Fishbone Analysis">
+                            <field name="fishbone_analysis_image" widget="image" class="oe_avatar"/>
+                        </page>
                     </notebook>
                 </sheet>
             </form>
