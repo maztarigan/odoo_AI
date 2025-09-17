@@ -1,0 +1,58 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<odoo>
+    <record id="view_model_ai_prompt_tree" model="ir.ui.view">
+        <field name="name">model.ai.prompt.tree</field>
+        <field name="model">model.ai.prompt</field>
+        <field name="arch" type="xml">
+            <tree string="AI Prompts">
+                <field name="name"/>
+                <field name="model_name"/>
+                <field name="temperature"/>
+                <field name="max_tokens"/>
+                <field name="response"/>
+            </tree>
+        </field>
+    </record>
+
+    <record id="view_model_ai_prompt_form" model="ir.ui.view">
+        <field name="name">model.ai.prompt.form</field>
+        <field name="model">model.ai.prompt</field>
+        <field name="arch" type="xml">
+            <form string="AI Prompt">
+                <header>
+                    <button name="action_send_prompt" type="object" string="Send Prompt" class="oe_highlight"/>
+                </header>
+                <sheet>
+                    <group>
+                        <field name="name"/>
+                        <field name="model_name"/>
+                        <field name="temperature"/>
+                        <field name="max_tokens"/>
+                    </group>
+                    <notebook>
+                        <page string="Prompt">
+                            <field name="prompt" placeholder="Describe your request for ChatGPT here..."/>
+                        </page>
+                        <page string="Response">
+                            <field name="response" nolabel="1" readonly="1"/>
+                        </page>
+                    </notebook>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <record id="action_model_ai_prompt" model="ir.actions.act_window">
+        <field name="name">AI Prompts</field>
+        <field name="res_model">model.ai.prompt</field>
+        <field name="view_mode">tree,form</field>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">
+                Create your first prompt and send it to ChatGPT.
+            </p>
+        </field>
+    </record>
+
+    <menuitem id="menu_model_ai_root" name="Model AI" parent="base.menu_custom" sequence="10"/>
+    <menuitem id="menu_model_ai_prompt" name="Prompts" parent="menu_model_ai_root" action="action_model_ai_prompt"/>
+</odoo>
