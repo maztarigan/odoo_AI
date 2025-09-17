@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 import json
 import logging
+import re
 
 import requests
 
@@ -19,6 +20,12 @@ class ModelAIPrompt(models.Model):
     nomor_spk = fields.Char(string='Nomor SPK')
     customer_complaint = fields.Text(string='Keluhan Pelanggan')
     response = fields.Text(string='Response', readonly=True)
+    response_problem_summary = fields.Text(string='Masalah dari Pelanggan', readonly=True)
+    response_root_cause = fields.Text(string='Analisa Masalah', readonly=True)
+    response_fishbone_summary = fields.Text(string='Fishbone Analysis', readonly=True)
+    response_supporting_plan = fields.Text(
+        string='Bagian Pendukung (CAPA & Indikator)', readonly=True
+    )
     fishbone_analysis_image = fields.Binary(string='Fishbone Analysis Image', readonly=True)
     model_name = fields.Char(string='Model', default='gpt-3.5-turbo')
     temperature = fields.Float(string='Temperature', default=0.2)
@@ -77,7 +84,8 @@ class ModelAIPrompt(models.Model):
             _logger.exception('Unexpected OpenAI API response: %s', data)
             raise UserError(_('Unexpected response format from OpenAI: %s') % exc)
 
-        updates = {'response': message}
+        sections = self._extract_response_sections(message)
+        updates = {'response': message, **sections}
 
         fishbone_image = self._generate_fishbone_image(message)
         if fishbone_image:
@@ -154,3 +162,51 @@ class ModelAIPrompt(models.Model):
             return False
 
         return image_base64
+
+    def _extract_response_sections(self, message):
+        section_defaults = {
+            'response_problem_summary': False,
+            'response_root_cause': False,
+            'response_fishbone_summary': False,
+            'response_supporting_plan': False,
+        }
+
+        if not message:
+            return section_defaults
+
+        pattern = re.compile(
+            r'(?:^|\n)\s*(?:\d+\.\s*)?(?P<title>'
+            r'Masalah dari Pelanggan|Analisa Masalah|Fishbone Analysis|'
+            r'Lanjutkan dengan bagian-bagian pendukung[^\n]*)\s*[:\-]?\s*',
+            re.IGNORECASE,
+        )
+
+        matches = list(pattern.finditer(message))
+        if not matches:
+            section_defaults['response_supporting_plan'] = message.strip() or False
+            return section_defaults
+
+        def _map_title_to_field(title):
+            title = (title or '').lower()
+            if 'masalah dari pelanggan' in title:
+                return 'response_problem_summary'
+            if 'analisa masalah' in title:
+                return 'response_root_cause'
+            if 'fishbone analysis' in title:
+                return 'response_fishbone_summary'
+            if 'lanjutkan dengan bagian-bagian pendukung' in title:
+                return 'response_supporting_plan'
+            return None
+
+        for idx, match in enumerate(matches):
+            field_name = _map_title_to_field(match.group('title'))
+            if not field_name:
+                continue
+
+            start = match.end()
+            end = matches[idx + 1].start() if idx + 1 < len(matches) else len(message)
+            content = message[start:end].strip()
+            if content:
+                section_defaults[field_name] = content
+
+        return section_defaults
