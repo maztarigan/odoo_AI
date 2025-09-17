@@ -19,6 +19,7 @@ class ModelAIPrompt(models.Model):
     nomor_spk = fields.Char(string='Nomor SPK')
     customer_complaint = fields.Text(string='Keluhan Pelanggan')
     response = fields.Text(string='Response', readonly=True)
+    fishbone_analysis_image = fields.Binary(string='Fishbone Analysis Image', readonly=True)
     model_name = fields.Char(string='Model', default='gpt-3.5-turbo')
     temperature = fields.Float(string='Temperature', default=0.2)
     max_tokens = fields.Integer(string='Max Tokens', default=256)
@@ -76,7 +77,13 @@ class ModelAIPrompt(models.Model):
             _logger.exception('Unexpected OpenAI API response: %s', data)
             raise UserError(_('Unexpected response format from OpenAI: %s') % exc)
 
-        self.write({'response': message})
+        updates = {'response': message}
+
+        fishbone_image = self._generate_fishbone_image(message)
+        if fishbone_image:
+            updates['fishbone_analysis_image'] = fishbone_image
+
+        self.write(updates)
         return True
 
     def _compose_prompt_content(self):
@@ -96,3 +103,45 @@ class ModelAIPrompt(models.Model):
             sections.append('\n'.join(context_lines))
 
         return '\n\n'.join(filter(None, sections))
+
+    def _generate_fishbone_image(self, analysis_text):
+        api_key = self.env['ir.config_parameter'].sudo().get_param('model_ai.openai_api_key')
+        if not api_key:
+            return False
+
+        prompt = _(
+            'Create a detailed fishbone (Ishikawa) diagram that visualizes the root cause analysis for the following case:\n%s'
+        ) % (analysis_text or '')
+
+        payload = {
+            'model': 'gpt-image-1',
+            'prompt': prompt,
+            'size': '1024x1024',
+            'response_format': 'b64_json',
+        }
+
+        headers = {
+            'Content-Type': 'application/json',
+            'Authorization': f'Bearer {api_key}',
+        }
+
+        try:
+            response = requests.post(
+                'https://api.openai.com/v1/images/generations',
+                headers=headers,
+                data=json.dumps(payload),
+                timeout=60,
+            )
+            response.raise_for_status()
+        except requests.RequestException as exc:
+            _logger.warning('Failed to generate fishbone analysis image: %s', exc)
+            return False
+
+        try:
+            data = response.json()
+            image_base64 = data['data'][0]['b64_json']
+        except (KeyError, IndexError, ValueError) as exc:
+            _logger.warning('Unexpected OpenAI image generation response: %s', exc)
+            return False
+
+        return image_base64
