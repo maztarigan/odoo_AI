@@ -6,9 +6,11 @@
         <field name="arch" type="xml">
             <tree string="AI Prompts">
                 <field name="name"/>
+                <field name="nomor_spk"/>
                 <field name="model_name"/>
                 <field name="temperature"/>
                 <field name="max_tokens"/>
+                <field name="customer_complaint"/>
                 <field name="response"/>
             </tree>
         </field>
@@ -25,6 +27,7 @@
                 <sheet>
                     <group>
                         <field name="name"/>
+                        <field name="nomor_spk"/>
                         <field name="model_name"/>
                         <field name="temperature"/>
                         <field name="max_tokens"/>
@@ -32,6 +35,7 @@
                     <notebook>
                         <page string="Prompt">
                             <field name="prompt" placeholder="Describe your request for ChatGPT here..."/>
+                            <field name="customer_complaint" placeholder="Tuliskan keluhan pelanggan..."/>
                         </page>
                         <page string="Response">
                             <field name="response" nolabel="1" readonly="1"/>
