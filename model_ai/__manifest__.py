@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 {
     'name': 'Model AI',
-    'version': '14.0.1.0.0',
+    'version': '14.0.1.1.0',
     'summary': 'Integrate ChatGPT prompts inside Odoo',
     'description': 'Send prompts to OpenAI\'s ChatGPT API and capture the responses.',
     'category': 'Productivity',

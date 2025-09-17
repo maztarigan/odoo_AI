@@ -16,6 +16,8 @@ class ModelAIPrompt(models.Model):
 
     name = fields.Char(string='Title', required=True, default=lambda self: _('New Prompt'))
     prompt = fields.Text(string='Prompt', required=True)
+    nomor_spk = fields.Char(string='Nomor SPK')
+    customer_complaint = fields.Text(string='Keluhan Pelanggan')
     response = fields.Text(string='Response', readonly=True)
     model_name = fields.Char(string='Model', default='gpt-3.5-turbo')
     temperature = fields.Float(string='Temperature', default=0.2)
@@ -33,12 +35,14 @@ class ModelAIPrompt(models.Model):
                 _('Please configure the OpenAI API key in System Parameters with the key "model_ai.openai_api_key".')
             )
 
+        content = self._compose_prompt_content()
+
         payload = {
             'model': self.model_name or 'gpt-3.5-turbo',
             'messages': [
                 {
                     'role': 'user',
-                    'content': self.prompt,
+                    'content': content,
                 }
             ],
             'temperature': self.temperature,
@@ -74,3 +78,21 @@ class ModelAIPrompt(models.Model):
 
         self.write({'response': message})
         return True
+
+    def _compose_prompt_content(self):
+        self.ensure_one()
+
+        sections = [_('Buatkan analisis dan rencana tindakan CAPA berdasarkan data berikut.')]
+        if self.prompt:
+            sections.append(self.prompt.strip())
+        context_lines = []
+        if self.nomor_spk and self.nomor_spk.strip():
+            context_lines.append(_('Nomor SPK: %s') % self.nomor_spk.strip())
+        if self.customer_complaint and self.customer_complaint.strip():
+            context_lines.append(_('Keluhan Pelanggan: %s') % self.customer_complaint.strip())
+
+        if context_lines:
+            sections.append(_('Informasi Konteks:'))
+            sections.append('\n'.join(context_lines))
+
+        return '\n\n'.join(filter(None, sections))
