@@ -18,6 +18,7 @@ class ModelAIPrompt(models.Model):
     name = fields.Char(string='Title', required=True, default=lambda self: _('New Prompt'))
     prompt = fields.Text(string='Prompt', required=True)
     nomor_spk = fields.Char(string='Nomor SPK')
+    history_spk = fields.Text(string='History SPK')
     customer_complaint = fields.Text(string='Keluhan Pelanggan')
     response = fields.Text(string='Response', readonly=True)
     response_problem_summary = fields.Text(string='Masalah dari Pelanggan', readonly=True)
@@ -109,9 +110,18 @@ class ModelAIPrompt(models.Model):
         ]
         if self.prompt:
             sections.append(self.prompt.strip())
+        if self.history_spk and self.history_spk.strip():
+            sections.append(
+                _(
+                    'Gunakan riwayat SPK berikut sebagai referensi utama ketika mencari akar penyebab masalah:'
+                )
+            )
+            sections.append(self.history_spk.strip())
         context_lines = []
         if self.nomor_spk and self.nomor_spk.strip():
             context_lines.append(_('Nomor SPK: %s') % self.nomor_spk.strip())
+        if self.history_spk and self.history_spk.strip():
+            context_lines.append(_('History SPK: %s') % self.history_spk.strip())
         if self.customer_complaint and self.customer_complaint.strip():
             context_lines.append(_('Keluhan Pelanggan: %s') % self.customer_complaint.strip())
 
