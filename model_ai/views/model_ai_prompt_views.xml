@@ -39,6 +39,7 @@
                     <notebook>
                         <page string="Prompt">
                             <field name="prompt" placeholder="Describe your request for ChatGPT here..."/>
+                            <field name="history_spk" placeholder="Ringkasan riwayat SPK terkait..."/>
                             <field name="customer_complaint" placeholder="Tuliskan keluhan pelanggan..."/>
                         </page>
                         <page string="Response">
