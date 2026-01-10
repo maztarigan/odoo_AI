@@ -1,0 +1,49 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="view_parkir_mobil_tree" model="ir.ui.view">
+        <field name="name">parkir.mobil.tree</field>
+        <field name="model">parkir.mobil</field>
+        <field name="arch" type="xml">
+            <tree>
+                <field name="tanggal"/>
+                <field name="nomor_plat"/>
+                <field name="jam_masuk" widget="float_time"/>
+                <field name="jam_keluar" widget="float_time"/>
+                <field name="total_jam"/>
+                <field name="tarif"/>
+            </tree>
+        </field>
+    </record>
+
+    <record id="view_parkir_mobil_form" model="ir.ui.view">
+        <field name="name">parkir.mobil.form</field>
+        <field name="model">parkir.mobil</field>
+        <field name="arch" type="xml">
+            <form>
+                <sheet>
+                    <group>
+                        <field name="tanggal"/>
+                        <field name="nomor_plat"/>
+                    </group>
+                    <group>
+                        <field name="jam_masuk" widget="float_time"/>
+                        <field name="jam_keluar" widget="float_time"/>
+                    </group>
+                    <group>
+                        <field name="total_jam" readonly="1"/>
+                        <field name="tarif" readonly="1"/>
+                    </group>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <record id="action_parkir_mobil" model="ir.actions.act_window">
+        <field name="name">Parkir Mobil</field>
+        <field name="res_model">parkir.mobil</field>
+        <field name="view_mode">tree,form</field>
+    </record>
+
+    <menuitem id="menu_parkir_mobil_root" name="Parkir Mobil"/>
+    <menuitem id="menu_parkir_mobil" name="Data Parkir" parent="menu_parkir_mobil_root" action="action_parkir_mobil"/>
+</odoo>
