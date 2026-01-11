@@ -13,12 +13,15 @@ Example:
 /parkir 2024-05-15 B1234CD 08:30 11:15
 """
 
+import logging
 import os
 from datetime import datetime
 from xmlrpc import client as xmlrpc_client
 
 from telegram import Update
 from telegram.ext import ApplicationBuilder, CommandHandler, ContextTypes
+
+logger = logging.getLogger(__name__)
 
 
 def _env(name: str) -> str:
@@ -100,14 +103,20 @@ async def parkir_command(update: Update, context: ContextTypes.DEFAULT_TYPE) -> 
     )
 
 
+async def error_handler(update: object, context: ContextTypes.DEFAULT_TYPE) -> None:
+    logger.exception("Unhandled exception in bot update processing", exc_info=context.error)
+
+
 def main() -> None:
+    logging.basicConfig(level=logging.INFO)
     token = _env("TELEGRAM_BOT_TOKEN")
     application = ApplicationBuilder().token(token).build()
 
     application.add_handler(CommandHandler("help", help_command))
     application.add_handler(CommandHandler("parkir", parkir_command))
+    application.add_error_handler(error_handler)
 
-    application.run_polling()
+    application.run_polling(drop_pending_updates=True)
 
 
 if __name__ == "__main__":
