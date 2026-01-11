@@ -101,7 +101,7 @@ async def parkir_command(update: Update, context: ContextTypes.DEFAULT_TYPE) -> 
 
 
 def main() -> None:
-    token = _env("8498543613:AAERSSpz5kd__pl_Xnz2JmgCxg3uE1Nqzu8")
+    token = _env("TELEGRAM_BOT_TOKEN")
     application = ApplicationBuilder().token(token).build()
 
     application.add_handler(CommandHandler("help", help_command))
